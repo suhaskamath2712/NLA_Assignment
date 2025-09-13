@@ -8,59 +8,59 @@ image_red = image[:,:,0]
 image_green = image[:,:,1]
 image_blue = image[:,:,2]
 
-#print array dimensions
-print("Red Channel Dimensions: ", image_red.shape)
-print("Green Channel Dimensions: ", image_green.shape)
-print("Blue Channel Dimensions: ", image_blue.shape)
-
 #Perform SVD on each channel
+print("Performing SVD on each component: ")
 U_red, S_red, VT_red = np.linalg.svd(image_red , full_matrices=False)
 U_green, S_green, VT_green = np.linalg.svd(image_green , full_matrices=False)
 U_blue, S_blue, VT_blue = np.linalg.svd(image_blue , full_matrices=False)
 
-#Save SVD Components to CSV
-np.savetxt(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\U_red_matrix.csv", U_red, delimiter=",")
-np.savetxt(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\S_red_matrix.csv", S_red, delimiter=",")
-np.savetxt(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\VT_red_matrix.csv", VT_red, delimiter=",")
+print("SVD Completed.")
+print("Starting low rank approximation")
 
-np.savetxt(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\U_green_matrix.csv", U_green, delimiter=",")
-np.savetxt(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\S_green_matrix.csv", S_green, delimiter=",")
-np.savetxt(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\VT_green_matrix.csv", VT_green, delimiter=",")
+#Calculate energy retained and hence appropriate k
+#Energy retained = sum of squares of first k singular values / sum of squares of all singular values
+#We need to find the minimum k such that energy retained >= 0.9 for all channels
+print("Calculating energy retained for different values of k to find minimum k for 90% energy retention in all channels.")
+epsilon = 0.9
+for k in range(0, 1961):
+    energy_red = np.sum(S_red[:k]**2) / np.sum(S_red**2)
+    energy_green = np.sum(S_green[:k]**2) / np.sum(S_green**2)
+    energy_blue = np.sum(S_blue[:k]**2) / np.sum(S_blue**2)
+    
+    #output energy retained for each channel
+    print(f"k={k}: Energy Retained - Red: {energy_red:.4f}, Green: {energy_green:.4f}, Blue: {energy_blue:.4f}")
 
-np.savetxt(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\U_blue_matrix.csv", U_blue, delimiter=",")
-np.savetxt(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\S_blue_matrix.csv", S_blue, delimiter=",")
-np.savetxt(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\VT_blue_matrix.csv", VT_blue, delimiter=",")
-
-'''
-#Perform SVD
-U, S, VT = np.linalg.svd(image , full_matrices=False)
-
-print("Original Matrix: ")
-print(np.asarray(image))
-
-print ("Left Singular Vectors (U): ")
-print(U)
-print("Singular Values (S): ")
-print(S)
-print("Right Singular Vectors (Vt): ")
-print(VT)
-
-#Save SVD Components to CSV
-np.savetxt(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\U_matrix.csv", U, delimiter=",")
-np.savetxt(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\S_matrix.csv", S, delimiter=",")
-np.savetxt(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\VT_matrix.csv", VT, delimiter=",")
-
+    if energy_red >= epsilon and energy_green >= epsilon and energy_blue >= epsilon:
+        print(f"Minimum k to retain at least 90% energy in all channels: {k}")
+        break
 
 #Low rank approximation
-k = 50  # Number of singular values to keep
-U_k = U[:, :k]
-S_k = S[:, :k]
-VT_k = VT[:k, :]
+U_red_k = U_red[:, :k]
+S_red_k = np.diag(S_red[:k])
+VT_red_k = VT_red[:k, :]
 
-# Reconstruct the image using the top k singular values
-S_k_matrix = np.diag(S_k)
-image_approx = np.dot(U_k, np.dot(S_k_matrix, VT_k))
-image_approx = np.clip(image_approx, 0, 255).astype(np.uint8)
-print("Low Rank Approximation: ")
-cv2.imwrite(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\SMACS_0723_low_rank_approx.png", image_approx)
-'''
+U_green_k = U_green[:, :k]
+S_green_k = np.diag(S_green[:k])
+VT_green_k = VT_green[:k, :]
+
+U_blue_k = U_blue[:, :k]
+S_blue_k = np.diag(S_blue[:k])
+VT_blue_k = VT_blue[:k, :]
+
+print("Low rank approximation completed.")
+print("Reconstructing the image from low rank approximation")
+#Reconstruct the image with reduced rank
+image_red_k = np.dot(U_red_k, np.dot(S_red_k, VT_red_k))
+image_green_k = np.dot(U_green_k, np.dot(S_green_k, VT_green_k))
+image_blue_k = np.dot(U_blue_k, np.dot(S_blue_k, VT_blue_k))
+image_reconstructed = np.zeros(image.shape)
+image_reconstructed[:,:,0] = image_red_k
+image_reconstructed[:,:,1] = image_green_k
+image_reconstructed[:,:,2] = image_blue_k
+
+image_reconstructed = np.clip(image_reconstructed, 0, 255).astype(np.uint8)
+print("Image reconstruction completed.")
+
+#Save the reconstructed image
+cv2.imwrite(rf"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\SMACS_0723_reconstructed_k{k}.png", image_reconstructed)
+print("Reconstructed image saved.")
