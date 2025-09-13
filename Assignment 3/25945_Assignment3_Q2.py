@@ -20,13 +20,20 @@ print("Starting low rank approximation")
 #Calculate energy retained and hence appropriate k
 #Energy retained = sum of squares of first k singular values / sum of squares of all singular values
 #We need to find the minimum k such that energy retained >= 0.9 for all channels
-print("Calculating energy retained for different values of k to find minimum k for 90% energy retention in all channels.")
 epsilon = 0.9
+
+print(f"Calculating energy retained for different values of k to find minimum k for {epsilon*100}% energy retention in all channels.")
+
+#Calculate total energy for each channel
+total_energy_red = np.sum(S_red**2)
+total_energy_green = np.sum(S_green**2)
+total_energy_blue = np.sum(S_blue**2)
+
 for k in range(0, 1961):
-    energy_red = np.sum(S_red[:k]**2) / np.sum(S_red**2)
-    energy_green = np.sum(S_green[:k]**2) / np.sum(S_green**2)
-    energy_blue = np.sum(S_blue[:k]**2) / np.sum(S_blue**2)
-    
+    energy_red = np.sum(S_red[:k]**2) / total_energy_red
+    energy_green = np.sum(S_green[:k]**2) / total_energy_green
+    energy_blue = np.sum(S_blue[:k]**2) / total_energy_blue
+
     #output energy retained for each channel
     print(f"k={k}: Energy Retained - Red: {energy_red:.4f}, Green: {energy_green:.4f}, Blue: {energy_blue:.4f}")
 
@@ -64,3 +71,35 @@ print("Image reconstruction completed.")
 #Save the reconstructed image
 cv2.imwrite(rf"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\SMACS_0723_reconstructed_k{k}.png", image_reconstructed)
 print("Reconstructed image saved.")
+
+#Error in image reconstruction for each channel using 2-norm
+error_red_2 = np.linalg.norm(image_red - image_red_k, 2)
+error_green_2 = np.linalg.norm(image_green - image_green_k, 2)
+error_blue_2 = np.linalg.norm(image_blue - image_blue_k, 2)
+print(f"Reconstruction Error (2-Norm) - Red: {error_red_2:.4f}, Green: {error_green_2:.4f}, Blue: {error_blue_2:.4f}")
+
+#Error in image reconstruction for each channel using frobenius norm
+error_red_fro = np.linalg.norm(image_red - image_red_k, 'fro')
+error_green_fro = np.linalg.norm(image_green - image_green_k, 'fro')
+error_blue_fro = np.linalg.norm(image_blue - image_blue_k, 'fro')
+print(f"Reconstruction Error (Frobenius Norm) - Red: {error_red_fro:.4f}, Green: {error_green_fro:.4f}, Blue: {error_blue_fro:.4f}")
+
+#Print (k+1)th singular value for each channel
+print(f"(k+1)th Singular Value - Red: {S_red[k]:.4f}")
+print(f"(k+1)th Singular Value - Green: {S_green[k]:.4f}")
+print(f"(k+1)th Singular Value - Blue: {S_blue[k]:.4f}")
+
+red_diff = 0
+green_diff = 0
+blue_diff = 0
+
+#Sum of squares of singular values from (k+1) to end for each channel
+for v in range(k, len(S_red)):
+    red_diff += S_red[v] ** 2
+    green_diff += S_green[v] ** 2
+    blue_diff += S_blue[v] ** 2
+
+print(f"Sq. root of sum of squares of singular values from (k+1) to end - Red: {np.sqrt(red_diff):.4f}")
+print(f"Sq. root of sum of squares of singular values from (k+1) to end - Green: {np.sqrt(green_diff):.4f}")
+print(f"Sq. root of sum of squares of singular values from (k+1) to end - Blue: {np.sqrt(blue_diff):.4f}")
+
