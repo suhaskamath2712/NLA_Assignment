@@ -34,9 +34,6 @@ for k in range(0, 1961):
     energy_green = np.sum(S_green[:k]**2) / total_energy_green
     energy_blue = np.sum(S_blue[:k]**2) / total_energy_blue
 
-    #output energy retained for each channel
-    print(f"k={k}: Energy Retained - Red: {energy_red:.4f}, Green: {energy_green:.4f}, Blue: {energy_blue:.4f}")
-
     if energy_red >= epsilon and energy_green >= epsilon and energy_blue >= epsilon:
         print(f"Minimum k to retain at least 90% energy in all channels: {k}")
         break
