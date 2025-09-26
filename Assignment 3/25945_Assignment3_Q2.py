@@ -4,6 +4,11 @@ import numpy as np
 # Load the image
 image = np.asarray(cv2.imread(r"H:\\My Drive\\Numerical Linear Algebra\\Assignments\\Assignment 3\\SMACS_0723.png"))
 
+#Convert BGR to RGB
+image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+print("Image loaded successfully.")
+
+#Separate the channels
 image_red = image[:,:,0]
 image_green = image[:,:,1]
 image_blue = image[:,:,2]
@@ -58,9 +63,9 @@ image_red_k = np.dot(U_red_k, np.dot(S_red_k, VT_red_k))
 image_green_k = np.dot(U_green_k, np.dot(S_green_k, VT_green_k))
 image_blue_k = np.dot(U_blue_k, np.dot(S_blue_k, VT_blue_k))
 image_reconstructed = np.zeros(image.shape)
-image_reconstructed[:,:,0] = image_red_k
+image_reconstructed[:,:,2] = image_red_k
 image_reconstructed[:,:,1] = image_green_k
-image_reconstructed[:,:,2] = image_blue_k
+image_reconstructed[:,:,0] = image_blue_k
 
 image_reconstructed = np.clip(image_reconstructed, 0, 255).astype(np.uint8)
 print("Image reconstruction completed.")
