@@ -2,6 +2,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+# Multiple indexes may have the same max value
+# In other words, a PageRank tie is possible
+# Returns tuple: (array of max indexes, max value)
+def find_max_indexes(vector):
+    max_value = np.max(vector)
+    max_indexes = np.where(vector == max_value)[0]
+    return (max_indexes, max_value)
+
+# Multiple indexes may have the same min value
+# In other words, a PageRank tie is possible
+# Returns tuple: (array of min indexes, min value)
+def find_min_indexes(vector):
+    min_value = np.min(vector)
+    min_indexes = np.where(vector == min_value)[0]
+    return (min_indexes, min_value)
+
 # --- Build the Markov transition matrix M ---
 M = np.zeros((10, 10))
 
@@ -61,10 +77,11 @@ for k in range(max_iterations):
 # PageRank interpretation: normalize so components sum to 1 (probability)
 pagerank_vector = x_k / np.linalg.norm(x_k)
 
-print(pagerank_vector)
+for i in range(len(pagerank_vector)):
+    print(f"Node {i}: PageRank = {pagerank_vector[i]}")
 
-print(f"Highest PageRank: Node {np.argmax(pagerank_vector)} (Rank: {np.max(pagerank_vector):.4f})")
-print(f"Lowest PageRank: Node {np.argmin(pagerank_vector)} (Rank: {np.min(pagerank_vector):.4f})")
+print(f"Highest PageRank: Node(s) {find_max_indexes(pagerank_vector)[0]} (Rank: {find_max_indexes(pagerank_vector)[1]:.4f})")
+print(f"Lowest PageRank: Node(s) {find_min_indexes(pagerank_vector)[0]} (Rank: {find_min_indexes(pagerank_vector)[1]:.4f})")
 
 save_dir = r"H:\My Drive\Numerical Linear Algebra\Assignments\Assignment 5"
 print(f"\nAttempting to save plots to: {save_dir}")
@@ -74,7 +91,7 @@ plt.figure(figsize=(16,9))
 plt.plot(residuals)
 plt.title('Convergence of Residual Norm in Power Iteration')
 plt.xlabel('Iteration Number')
-plt.ylabel('Residual Norm ||M x_k - λ_k x_k||_2')
+plt.ylabel('Residual Norm ||M x_k - lambda_k x_k||_2')
 plt.grid(True)
 plt.savefig(os.path.join(save_dir, 'residual_norm.png'), dpi=400)
 
